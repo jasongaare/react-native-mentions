@@ -13,11 +13,11 @@ export default class MentionsTextInput extends Component {
     super();
     this.state = {
       textInputHeight: "",
-      isTrackingStrated: false,
+      isTrackingStarted: false,
       suggestionRowHeight: new Animated.Value(0),
 
     }
-    this.isTrackingStrated = false;
+    this.isTrackingStarted = false;
     this.previousChar = " ";
   }
 
@@ -29,8 +29,8 @@ export default class MentionsTextInput extends Component {
 
   componentWillReceiveProps(nextProps) {
     if (!nextProps.value) {
-      this.resetTextbox();
-    } else if (this.isTrackingStrated && !nextProps.horizontal && nextProps.suggestionsData.length !== 0) {
+      // this.resetTextbox();
+    } else if (this.isTrackingStarted && !nextProps.horizontal && nextProps.suggestionsData.length !== 0) {
       const numOfRows = nextProps.MaxVisibleRowCount >= nextProps.suggestionsData.length ? nextProps.suggestionsData.length : nextProps.MaxVisibleRowCount;
       const height = numOfRows * nextProps.suggestionRowHeight;
       this.openSuggestionsPanel(height);
@@ -38,18 +38,18 @@ export default class MentionsTextInput extends Component {
   }
 
   startTracking() {
-    this.isTrackingStrated = true;
+    this.isTrackingStarted = true;
     this.openSuggestionsPanel();
     this.setState({
-      isTrackingStrated: true
+      isTrackingStarted: true
     })
   }
 
   stopTracking() {
-    this.isTrackingStrated = false;
+    this.isTrackingStarted = false;
     this.closeSuggestionsPanel();
     this.setState({
-      isTrackingStrated: false
+      isTrackingStarted: false
     })
   }
 
@@ -72,7 +72,7 @@ export default class MentionsTextInput extends Component {
   }
 
   identifyKeyword(val) {
-    if (this.isTrackingStrated) {
+    if (this.isTrackingStarted) {
       const boundary = this.props.triggerLocation === 'new-word-only' ? 'B' : '';
       const pattern = new RegExp(`\\${boundary}${this.props.trigger}[a-z0-9_-]+|\\${boundary}${this.props.trigger}`, `gi`);
       const keywordArray = val.match(pattern);
@@ -89,7 +89,7 @@ export default class MentionsTextInput extends Component {
     const wordBoundry = (this.props.triggerLocation === 'new-word-only') ? this.previousChar.trim().length === 0 : true;
     if (lastChar === this.props.trigger && wordBoundry) {
       this.startTracking();
-    } else if (lastChar === ' ' && this.state.isTrackingStrated || val === "") {
+    } else if (lastChar === ' ' && this.state.isTrackingStarted || val === "") {
       this.stopTracking();
     }
     this.previousChar = lastChar;
@@ -126,7 +126,6 @@ export default class MentionsTextInput extends Component {
           ref={component => this._textInput = component}
           onChangeText={this.onChangeText.bind(this)}
           multiline={true}
-          value={this.props.value}
           style={[{ ...this.props.textInputStyle }, { height: Math.min(this.props.textInputMaxHeight, this.state.textInputHeight) }]}
           placeholder={this.props.placeholder ? this.props.placeholder : 'Write a comment...'}
         />
@@ -146,7 +145,7 @@ MentionsTextInput.propTypes = {
   textInputMaxHeight: PropTypes.number,
   trigger: PropTypes.string.isRequired,
   triggerLocation: PropTypes.oneOf(['new-word-only', 'anywhere']).isRequired,
-  value: PropTypes.string.isRequired,
+  value: PropTypes.string,
   onChangeText: PropTypes.func.isRequired,
   triggerCallback: PropTypes.func.isRequired,
   renderSuggestionsRow: PropTypes.oneOfType([
